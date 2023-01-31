@@ -1,1 +1,1 @@
-export * from "./ProductRoute"
+export * from "./ProductRoute";
