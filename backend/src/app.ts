@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import {productRouter} from "./routes";
+import {productRouter, userRouter} from "./routes";
 import { requestLogger, unknownEndpoint, errorHandler } from "./middleware";
 
 dotenv.config();
@@ -12,6 +12,7 @@ app.use(cors());
 
 app.use(requestLogger);
 
+app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
 
 app.use(unknownEndpoint);
