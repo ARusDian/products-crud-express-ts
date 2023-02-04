@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { getUserByIdService } from "../services";
-import { UserAuthInfoRequest } from "../types";
+import { UserAuthInfoRequest } from "../models";
 
 interface TokenPayload { 
 	id: number;

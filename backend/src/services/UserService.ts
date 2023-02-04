@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { UserRegistrationModel } from "../types";
+import { UserRegistrationModel } from "../models";
 import argon2 from "argon2";
 
 const prisma = new PrismaClient();
@@ -49,7 +49,10 @@ export const getUserByEmailService = async (email: string) => {
 };
 
 export const registerUserService = async (userRequest: UserRegistrationModel) => {
-	const { name, email, password } = userRequest;
+	const { name, email, password, confirmPassword} = userRequest;
+	if (password !== confirmPassword) {
+		throw new Error("Passwords do not match");
+	}
 	const hashedPassword = await argon2.hash(password);
 	return await prisma.user.create({
 		data: {

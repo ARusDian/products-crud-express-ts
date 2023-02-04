@@ -2,7 +2,7 @@ import argon2 from "argon2";
 import { getUserByEmailService, getUsersService, registerUserService, getUserByIdService, deleteUserService } from "../services";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { UserAuthInfoRequest } from "../types";
+import { UserAuthInfoRequest } from "../models";
 
 export const getUsers = async (req: UserAuthInfoRequest, res: Response) => {
 	try {
