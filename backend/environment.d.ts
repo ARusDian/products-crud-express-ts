@@ -3,7 +3,8 @@ declare global {
         interface ProcessEnv {
             DATABASE_URL : string,
             APP_PORT :number,
-            JWT_SECRET : string,
+            JWT_SECRET: string,
+            NODE_ENV: "development" | "production" | "test"
         }
     }
 }
