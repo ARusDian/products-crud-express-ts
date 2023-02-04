@@ -1,4 +1,4 @@
-import * as logger from "./logger";
+import * as logger from "./Logger";
 import { Request, Response, NextFunction } from "express";
 
 export const requestLogger = (request : Request, response : Response, next : NextFunction) => {
