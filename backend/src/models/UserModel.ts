@@ -1,11 +1,11 @@
-import { BaseRole } from ".";
+import { BaseRoleModel } from ".";
 
 export interface BaseUserModel {
     id?: number;
     name: string;
     email: string;
     password?: string;
-    role?: BaseRole;
+    role?: BaseRoleModel;
     roleId?: number;
 }
 

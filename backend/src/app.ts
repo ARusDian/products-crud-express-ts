@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import {AuthRouter, productRouter, userRouter} from "./routes";
+import {AuthRouter, productRouter, roleRouter, userRouter} from "./routes";
 import { requestLogger, unknownEndpoint, errorHandler, verifyUser, adminOnly } from "./middleware";
 
 dotenv.config();
@@ -20,6 +20,7 @@ app.use("/api/products", productRouter);
 
 app.use(adminOnly);
 app.use("/api/users", userRouter);
+app.use("/api/roles", roleRouter);
 
 app.use(unknownEndpoint);
 
