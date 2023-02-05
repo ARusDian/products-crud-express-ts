@@ -1,9 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { UserRegistrationModel } from "../models";
-import argon2 from "argon2";
+import { Request } from "express";
+import { UserInputValidation } from ".";
+import { ErrorResponse, ErrorDetails, UserModel } from "../models";
 
 const prisma = new PrismaClient();
-
 
 export const getUsersService = async () => {
 	return await prisma.user.findMany({
@@ -18,18 +18,40 @@ export const getUsersService = async () => {
 	});
 };
 
-export const getUserByIdService = async (id: number | string) => {
+export const getUserByIdService = async (id: number | string) : Promise<UserModel> => {
 	if (isNaN(Number(id))) {
-		return null;
+		throw new ErrorResponse(
+			400,
+			"Bad Request",
+			new ErrorDetails(
+				"getUser",
+				"Invalid id",
+				`User id ${id} is invalid`
+			)
+		);
 	}
 	if (typeof id === "string") {
 		id = parseInt(id);
 	}
-	return await prisma.user.findUnique({
+
+	const user = await prisma.user.findUnique({
 		where: {
 			id: id
 		},
 	});
+
+	if (!user) {
+		throw new ErrorResponse(
+			404,
+			"Not Found",
+			new ErrorDetails(
+				"getUser",
+				"User not found",
+				`User with id ${id} not found`
+			)
+		);
+	}
+	return user;
 };
 
 export const getUserByEmailService = async (email: string) => {
@@ -48,39 +70,78 @@ export const getUserByEmailService = async (email: string) => {
 	});
 };
 
-export const registerUserService = async (userRequest: UserRegistrationModel) => {
-	const { name, email, password, confirmPassword} = userRequest;
-	if (password !== confirmPassword) {
-		throw new Error("Passwords do not match");
-	}
-	const hashedPassword = await argon2.hash(password);
+export const createUserService = async (req: Request) => {
+	const user = await UserInputValidation(req.body, "createUser");
 	return await prisma.user.create({
-		data: {
-			name: name,
-			email: email,
-			password: hashedPassword,
-		},
-		select: {
-			id: true,
-			name: true,
-			email: true,
-			createdAt: true,
-			updatedAt: true,
-		},
-	});
-};
-
-export const updateUserService = async (id: number, user: UserRegistrationModel) => {
-	user.password = await argon2.hash(user.password);
-	return await prisma.user.update({
-		where: {
-			id: id
-		},
 		data: user
 	});
 };
 
-export const deleteUserService = async (id: number) => {
+export const updateUserService = async (id: number | string, req: Request) => {
+	if (isNaN(Number(id))) {
+		throw new ErrorResponse(
+			400,
+			"Bad Request",
+			new ErrorDetails(
+				"getUser",
+				"Invalid id",
+				`User id ${id} is invalid`
+			)
+		);
+	}
+	if (typeof id === "string") {
+		id = parseInt(id);
+	}
+
+	const user = await getUserByIdService(id);
+	if (!user) {
+		throw new ErrorResponse(
+			404,
+			"Not Found",
+			new ErrorDetails(
+				"updateUser",
+				"User not found",
+				`User with id ${req.params.id} not found`
+			)
+		);
+	}
+	const newUser = await UserInputValidation(req.body, "updateUser");
+	return await prisma.user.update({
+		where: {
+			id: id
+		},
+		data: newUser
+	});
+};
+
+export const deleteUserService = async (id: number | string) => {
+	if (isNaN(Number(id))) {
+		throw new ErrorResponse(
+			400,
+			"Bad Request",
+			new ErrorDetails(
+				"getUser",
+				"Invalid id",
+				`User id ${id} is invalid`
+			)
+		);
+	}
+	if (typeof id === "string") {
+		id = parseInt(id);
+	}
+
+	const user = await getUserByIdService(id);
+	if (!user) {
+		throw new ErrorResponse(
+			404,
+			"Not Found",
+			new ErrorDetails(
+				"deleteUser",
+				"User not found",
+				`User with id ${id} not found`
+			)
+		);
+	}
 	return await prisma.user.delete({
 		where: {
 			id: id

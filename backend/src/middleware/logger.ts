@@ -11,3 +11,4 @@ export const error = (...params: any) => {
 		console.error(...params);
 	}
 };
+
