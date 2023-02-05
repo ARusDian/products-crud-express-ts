@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import {AuthRouter, productRouter, userRouter} from "./routes";
-import { requestLogger, unknownEndpoint, errorHandler, verifyUser } from "./middleware";
+import { requestLogger, unknownEndpoint, errorHandler, verifyUser, adminOnly } from "./middleware";
 
 dotenv.config();
 
@@ -16,8 +16,10 @@ app.use(requestLogger);
 app.use("/api", AuthRouter);
 
 app.use(verifyUser);
-app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
+
+app.use(adminOnly);
+app.use("/api/users", userRouter);
 
 app.use(unknownEndpoint);
 

@@ -1,4 +1,10 @@
-import { DataDetailResponse, ProductModel, SuccessResponse } from "../models";
+import {
+	DataDetailResponse,
+	ProductModel,
+	SuccessResponse,
+	UserAuthInfoRequest
+} from "../models";
+
 import {
 	createProductService,
 	deleteProductService,
@@ -8,9 +14,9 @@ import {
 } from "../services";
 import { NextFunction, Request, Response } from "express";
 
-export const getProducts = async (req: Request, res: Response, next: NextFunction) => {
+export const getProducts = async (req: UserAuthInfoRequest, res: Response, next: NextFunction) => {
 	try {
-		const products = await getProductsService();
+		const products = await getProductsService(req.roleId, req.userId);
 		const response = new SuccessResponse<ProductModel[]>(
 			200,
 			"OK",
@@ -27,9 +33,9 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
 	}
 };
 
-export const getProductById = async (req: Request, res: Response, next: NextFunction) => {
+export const getProductById = async (req: UserAuthInfoRequest, res: Response, next: NextFunction) => {
 	try {
-		const product = await getProductByIdService(Number(req.params.id));
+		const product = await getProductByIdService(Number(req.params.id), req.roleId, req.userId);
 		const response = new SuccessResponse<ProductModel>(
 			200,
 			"OK",
@@ -84,9 +90,9 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
 	}
 };
 
-export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteProduct = async (req: UserAuthInfoRequest, res: Response, next: NextFunction) => {
 	try {
-		const product = await deleteProductService(Number(req.params.id));
+		const product = await deleteProductService(Number(req.params.id), req.roleId, req.userId);
 		const response = new SuccessResponse<ProductModel>(
 			200,
 			"OK",

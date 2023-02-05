@@ -1,6 +1,10 @@
 import { BaseProductModel, ErrorDetails, ErrorResponse } from "../../models";
 
-export const ProductInputValidation =  async (product: BaseProductModel, errorName : string) => {
+interface ProductInput extends BaseProductModel {
+	userId: number;
+}
+
+export const ProductInputValidation = async (product: ProductInput, errorName : string) => {
 	if (!product.name || !product.price) {
 		throw new ErrorResponse(
 			400,
@@ -9,6 +13,17 @@ export const ProductInputValidation =  async (product: BaseProductModel, errorNa
 				errorName,
 				"Validation Error",
 				"All fields are required"
+			)
+		);
+	}
+	if (product.userId === undefined) {
+		throw new ErrorResponse(
+			400,
+			"Bad Request",
+			new ErrorDetails(
+				errorName,
+				"Validation Error",
+				"User Id is required"
 			)
 		);
 	}

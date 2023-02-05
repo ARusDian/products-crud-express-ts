@@ -7,13 +7,8 @@ const prisma = new PrismaClient();
 
 export const getUsersService = async () => {
 	return await prisma.user.findMany({
-		select: {
-			id: true,
-			name: true,
-			email: true,
-			password: true,
-			createdAt: true,
-			updatedAt: true,
+		include: {
+			role: true
 		},
 	});
 };
@@ -38,6 +33,9 @@ export const getUserByIdService = async (id: number | string) : Promise<UserMode
 		where: {
 			id: id
 		},
+		include: {
+			role: true
+		}
 	});
 
 	if (!user) {
@@ -71,9 +69,18 @@ export const getUserByEmailService = async (email: string) => {
 };
 
 export const createUserService = async (req: Request) => {
-	const user = await UserInputValidation(req.body, "createUser");
+	const {name, email, password, roleId} = await UserInputValidation(req.body, "createUser");
 	return await prisma.user.create({
-		data: user
+		data: {
+			name: name,
+			email: email,
+			password: password,
+			role: {
+				connect: {
+					id: roleId || 2
+				}
+			}
+		}
 	});
 };
 
@@ -105,12 +112,21 @@ export const updateUserService = async (id: number | string, req: Request) => {
 			)
 		);
 	}
-	const newUser = await UserInputValidation(req.body, "updateUser");
+	const {name, email, password, roleId} = await UserInputValidation(req.body, "updateUser");
 	return await prisma.user.update({
 		where: {
 			id: id
 		},
-		data: newUser
+		data: {
+			name: name,
+			email: email,
+			password: password,
+			role: {
+				connect: {
+					id: roleId || 2
+				}
+			}
+		}
 	});
 };
 

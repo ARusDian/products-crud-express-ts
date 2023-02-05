@@ -1,8 +1,12 @@
+import { BaseRole } from ".";
+
 export interface BaseUserModel {
     id?: number;
     name: string;
-    password: string;
     email: string;
+    password?: string;
+    role?: BaseRole;
+    roleId?: number;
 }
 
 export interface UserModel extends BaseUserModel {

@@ -1,5 +1,6 @@
 export * from "./ProductModel";
 export * from "./UserModel";
-export * from "./RequestModel";
 export * from "./ResponsesModel";
 export * from "./AuthTokenModel";
+export * from "./RoleModel";
+export * from "./RequestsModel";

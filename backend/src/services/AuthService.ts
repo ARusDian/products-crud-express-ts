@@ -133,7 +133,7 @@ export const loginService = async (req: Request) => {
 };
 
 export const authenticatedService = async (req: Request) => {
-	const { token } = req.body;
+	const token = req.get("authorization");
 	if (!token) {
 		throw new ErrorResponse(
 			400,
@@ -145,7 +145,7 @@ export const authenticatedService = async (req: Request) => {
 			}
 		);
 	}
-	const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+	const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as AuthToken;
 	if (!decoded) {
 		throw new ErrorResponse(
 			400,
@@ -157,7 +157,7 @@ export const authenticatedService = async (req: Request) => {
 			}
 		);
 	}
-	const user = await getUserByIdService((decoded as AuthToken).id);
+	const user = await getUserByIdService((decoded).id);
 	if (!user) {
 		throw new ErrorResponse(
 			400,

@@ -3,7 +3,7 @@ import { getUserByEmailService } from "../UserService";
 import argon2 from "argon2";
 
 export const UserInputValidation = async (newUser: BaseUserModel, errorName : string) => { 
-	const { name, email, password } = newUser;
+	const { name, email, password, roleId } = newUser;
 	if (!name || !email || !password) {
 		throw new ErrorResponse(
 			400,
@@ -43,5 +43,6 @@ export const UserInputValidation = async (newUser: BaseUserModel, errorName : st
 		name: name,
 		email: email,
 		password: hashedPassword,
+		roleId: roleId
 	};
 };

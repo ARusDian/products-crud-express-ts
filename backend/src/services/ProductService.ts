@@ -1,15 +1,70 @@
 import { PrismaClient } from "@prisma/client";
 import { Request } from "express";
 import { ProductInputValidation } from ".";
-import { ErrorDetails, ErrorResponse } from "../models";
+import { ErrorDetails, ErrorResponse, UserAuthInfoRequest } from "../models";
 
 const prisma = new PrismaClient();
 
-export const getProductsService = async () => {
-	return await prisma.product.findMany();
+export const getProductsService = async (roleId: number | undefined, userId: number | undefined) => {
+	if (!roleId || !userId) {
+		throw new ErrorResponse(
+			401,
+			"Unauthorized",
+			new ErrorDetails(
+				"getProducts",
+				"Unauthorized",
+				"User is not authorized to access this resource"
+			)
+		);
+	}
+
+	if (roleId === 1 || roleId === 2) {
+		return await prisma.product.findMany({
+			select: {
+				id: true,
+				name: true,
+				price: true,
+				user: {
+					select: {
+						name: true,
+						email: true
+					}
+				}
+			}
+		});
+	}
+
+	return await prisma.product.findMany({
+		select: {
+			id: true,
+			name: true,
+			price: true,
+			user: {
+				select: {
+					name: true,
+					email: true
+				}
+			}
+		},
+		where: {
+			userId: userId
+		}
+	});
 };
 
-export const getProductByIdService = async (id: number) => {
+export const getProductByIdService = async (id: number, roleId: number | undefined, userId: number | undefined) => {
+	if (!roleId || !userId) {
+		throw new ErrorResponse(
+			401,
+			"Unauthorized",
+			new ErrorDetails(
+				"getProducts",
+				"Unauthorized",
+				"User is not authorized to access this resource"
+			)
+		);
+	}
+
 	if (isNaN(Number(id))) {
 		throw new ErrorResponse(
 			400,
@@ -25,11 +80,22 @@ export const getProductByIdService = async (id: number) => {
 		id = parseInt(id);
 	}
 
-	const product =  await prisma.product.findUnique({
+	const product =  await prisma.product.findFirst({
+		include: {
+			user: true
+		},
 		where: {
-			id: id
+			AND: [
+				{
+					id : id
+				},
+				{
+					userId: userId
+				}
+			]
 		}
 	});
+	
 	if (!product) {
 		throw new ErrorResponse(
 			404,
@@ -46,13 +112,25 @@ export const getProductByIdService = async (id: number) => {
 
 export const createProductService = async (req: Request) => {
 	console.log(req.body);
-	const product = await ProductInputValidation(req.body, "createProduct");
+	const {
+		name,
+		price,
+		userId
+	} = await ProductInputValidation(req.body, "createProduct");
 	return await prisma.product.create({
-		data: product
+		data: {
+			name,
+			price,
+			user: {
+				connect: {
+					id: userId
+				}
+			}
+		}
 	});
 };
 
-export const updateProductService = async (id: number, req: Request) => {
+export const updateProductService = async (id: number, req: UserAuthInfoRequest) => {
 	if (isNaN(Number(id))) {
 		throw new ErrorResponse(
 			400,
@@ -68,7 +146,7 @@ export const updateProductService = async (id: number, req: Request) => {
 		id = parseInt(id);
 	}
 
-	const product = await getProductByIdService(id);
+	const product = await getProductByIdService(id, req.roleId, req.userId);
 	if (!product) {
 		throw new ErrorResponse(
 			404,
@@ -80,16 +158,28 @@ export const updateProductService = async (id: number, req: Request) => {
 			)
 		);
 	}
-	const newProduct = await ProductInputValidation(req.body, "updateProduct");
+	const {
+		name,
+		price,
+		userId
+	} = await ProductInputValidation(req.body, "updateProduct");
 	return await prisma.product.update({
 		where: {
 			id: id
 		},
-		data: newProduct
+		data: {
+			name,
+			price,
+			user: {
+				connect: {
+					id: userId
+				}
+			}
+		}
 	});
 };
 
-export const deleteProductService = async (id: number) => {
+export const deleteProductService = async (id: number, roleId: number | undefined, userId: number | undefined) => {
 	if (isNaN(Number(id))) {
 		throw new ErrorResponse(
 			400,
@@ -105,7 +195,7 @@ export const deleteProductService = async (id: number) => {
 		id = parseInt(id);
 	}
 	
-	const product = await getProductByIdService(id);
+	const product = await getProductByIdService(id, roleId, userId);
 	if (!product) {
 		throw new ErrorResponse(
 			404,
