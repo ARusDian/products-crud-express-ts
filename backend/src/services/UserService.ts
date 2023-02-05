@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Request } from "express";
-import { UserInputValidation } from ".";
+import { UserInputValidation, numberValidation } from ".";
 import { ErrorResponse, ErrorDetails, UserModel } from "../models";
 
 const prisma = new PrismaClient();
@@ -14,20 +14,7 @@ export const getUsersService = async () => {
 };
 
 export const getUserByIdService = async (id: number | string) : Promise<UserModel> => {
-	if (isNaN(Number(id))) {
-		throw new ErrorResponse(
-			400,
-			"Bad Request",
-			new ErrorDetails(
-				"getUser",
-				"Invalid id",
-				`User id ${id} is invalid`
-			)
-		);
-	}
-	if (typeof id === "string") {
-		id = parseInt(id);
-	}
+	id = numberValidation(id, "getUser", "User id");
 
 	const user = await prisma.user.findUnique({
 		where: {
@@ -69,7 +56,8 @@ export const getUserByEmailService = async (email: string) => {
 };
 
 export const createUserService = async (req: Request) => {
-	const {name, email, password, roleId} = await UserInputValidation(req.body, "createUser");
+	const { name, email, password, roleId } = await UserInputValidation(req.body, "createUser");
+	
 	return await prisma.user.create({
 		data: {
 			name: name,
@@ -85,37 +73,13 @@ export const createUserService = async (req: Request) => {
 };
 
 export const updateUserService = async (id: number | string, req: Request) => {
-	if (isNaN(Number(id))) {
-		throw new ErrorResponse(
-			400,
-			"Bad Request",
-			new ErrorDetails(
-				"getUser",
-				"Invalid id",
-				`User id ${id} is invalid`
-			)
-		);
-	}
-	if (typeof id === "string") {
-		id = parseInt(id);
-	}
-
 	const user = await getUserByIdService(id);
-	if (!user) {
-		throw new ErrorResponse(
-			404,
-			"Not Found",
-			new ErrorDetails(
-				"updateUser",
-				"User not found",
-				`User with id ${req.params.id} not found`
-			)
-		);
-	}
-	const {name, email, password, roleId} = await UserInputValidation(req.body, "updateUser");
+
+	const { name, email, password, roleId } = await UserInputValidation(req.body, "updateUser");
+	
 	return await prisma.user.update({
 		where: {
-			id: id
+			id: user.id
 		},
 		data: {
 			name: name,
@@ -131,36 +95,11 @@ export const updateUserService = async (id: number | string, req: Request) => {
 };
 
 export const deleteUserService = async (id: number | string) => {
-	if (isNaN(Number(id))) {
-		throw new ErrorResponse(
-			400,
-			"Bad Request",
-			new ErrorDetails(
-				"getUser",
-				"Invalid id",
-				`User id ${id} is invalid`
-			)
-		);
-	}
-	if (typeof id === "string") {
-		id = parseInt(id);
-	}
-
 	const user = await getUserByIdService(id);
-	if (!user) {
-		throw new ErrorResponse(
-			404,
-			"Not Found",
-			new ErrorDetails(
-				"deleteUser",
-				"User not found",
-				`User with id ${id} not found`
-			)
-		);
-	}
+
 	return await prisma.user.delete({
 		where: {
-			id: id
+			id: user.id
 		}
 	});
 };

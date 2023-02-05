@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Request } from "express";
-import { ProductInputValidation } from ".";
+import { ProductInputValidation, numberValidation } from ".";
 import { ErrorDetails, ErrorResponse, UserAuthInfoRequest } from "../models";
 
 const prisma = new PrismaClient();
@@ -65,20 +65,7 @@ export const getProductByIdService = async (id: number, roleId: number | undefin
 		);
 	}
 
-	if (isNaN(Number(id))) {
-		throw new ErrorResponse(
-			400,
-			"Bad Request",
-			new ErrorDetails(
-				"getUser",
-				"Invalid id",
-				`User id ${id} is invalid`
-			)
-		);
-	}
-	if (typeof id === "string") {
-		id = parseInt(id);
-	}
+	id = numberValidation(id, "deleteRole", "Product id");
 
 	const product =  await prisma.product.findFirst({
 		include: {
@@ -116,6 +103,7 @@ export const createProductService = async (req: Request) => {
 		price,
 		userId
 	} = await ProductInputValidation(req.body, "createProduct");
+	
 	return await prisma.product.create({
 		data: {
 			name,
@@ -130,41 +118,17 @@ export const createProductService = async (req: Request) => {
 };
 
 export const updateProductService = async (id: number, req: UserAuthInfoRequest) => {
-	if (isNaN(Number(id))) {
-		throw new ErrorResponse(
-			400,
-			"Bad Request",
-			new ErrorDetails(
-				"getUser",
-				"Invalid id",
-				`User id ${id} is invalid`
-			)
-		);
-	}
-	if (typeof id === "string") {
-		id = parseInt(id);
-	}
-
 	const product = await getProductByIdService(id, req.roleId, req.userId);
-	if (!product) {
-		throw new ErrorResponse(
-			404,
-			"Not Found",
-			new ErrorDetails(
-				"updateProduct",
-				"Product Not Found",
-				"Product with the given ID was not found"
-			)
-		);
-	}
+	
 	const {
 		name,
 		price,
 		userId
 	} = await ProductInputValidation(req.body, "updateProduct");
+
 	return await prisma.product.update({
 		where: {
-			id: id
+			id: product.id
 		},
 		data: {
 			name,
@@ -179,36 +143,11 @@ export const updateProductService = async (id: number, req: UserAuthInfoRequest)
 };
 
 export const deleteProductService = async (id: number, roleId: number | undefined, userId: number | undefined) => {
-	if (isNaN(Number(id))) {
-		throw new ErrorResponse(
-			400,
-			"Bad Request",
-			new ErrorDetails(
-				"getUser",
-				"Invalid id",
-				`User id ${id} is invalid`
-			)
-		);
-	}
-	if (typeof id === "string") {
-		id = parseInt(id);
-	}
-	
 	const product = await getProductByIdService(id, roleId, userId);
-	if (!product) {
-		throw new ErrorResponse(
-			404,
-			"Not Found",
-			new ErrorDetails(
-				"deleteProduct",
-				"Product Not Found",
-				"Product with the given ID was not found"
-			)
-		);
-	}
+
 	return await prisma.product.delete({
 		where: {
-			id: id
+			id: product.id
 		}
 	});
 };
