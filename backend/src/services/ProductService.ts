@@ -111,7 +111,6 @@ export const getProductByIdService = async (id: number, roleId: number | undefin
 };
 
 export const createProductService = async (req: Request) => {
-	console.log(req.body);
 	const {
 		name,
 		price,
