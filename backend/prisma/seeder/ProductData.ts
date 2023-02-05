@@ -7,7 +7,20 @@ export const ProductData = [
 			connect: {
 				id: 1
 			}
-		}
+		},
+		category: [
+			{
+				connect: {
+					id: 1
+				},
+			},
+			{
+				connect:
+				{
+					id: 2
+				}
+			}
+		]
 	},
 	{
 		name: "Product 2",
@@ -17,7 +30,20 @@ export const ProductData = [
 			connect: {
 				id: 3
 			}
-		}
+		},
+		category: [
+			{
+				connect: {
+					id: 2
+				},
+			},
+			{
+				connect:
+				{
+					id: 3
+				}
+			}
+		]
 	},
 	{
 		name: "Product 3",
@@ -27,6 +53,19 @@ export const ProductData = [
 			connect: {
 				id: 2
 			}
-		}
+		},
+		category: [
+			{
+				connect: {
+					id: 1
+				},
+			},
+			{
+				connect:
+				{
+					id: 4
+				}
+			}
+		]
 	},
 ];

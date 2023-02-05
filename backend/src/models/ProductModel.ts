@@ -1,4 +1,4 @@
-import { BaseUserModel } from ".";
+import { BaseCategoryModel, BaseUserModel } from ".";
 
 export interface BaseProductModel { 
     id?: number;
@@ -6,6 +6,7 @@ export interface BaseProductModel {
     price: number;
     user?: BaseUserModel;
     userId?: number;
+    category?: BaseCategoryModel[];
 }
 
 export interface ProductModel extends BaseProductModel {

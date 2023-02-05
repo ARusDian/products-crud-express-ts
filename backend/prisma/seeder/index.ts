@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { RoleData } from "./RoleData";
 import { ProductData } from "./ProductData";
 import { UserData } from "./UserData";
+import { CategoryData } from "./CategoryData";
 
 const prisma = new PrismaClient();
 
@@ -36,6 +37,19 @@ const seedUser = async () => {
 	);
 };
 
+const seedCategory = async () => {
+	Promise.all(
+		CategoryData.map(async (category) => {
+			await prisma.category.create({
+				data: {
+					name: category.name,
+					
+				},
+			});
+		})
+	);
+};
+
 const seedProduct = async () => {
 	Promise.all(
 		ProductData.map(async (product) => {
@@ -47,6 +61,15 @@ const seedProduct = async () => {
 						connect: {
 							id: product.userId,
 						}
+					},
+					category: {
+						connect: 
+							product.category.map((category) => (
+								{
+									id: category.connect.id
+								}
+							)),
+						
 					}
 				},
 			});
@@ -63,8 +86,12 @@ async function main() {
 	await prisma.role.deleteMany();
 	console.log("Deleted records in role table");
 
+	await prisma.category.deleteMany();
+	console.log("Deleted records in category table");
+
 	await prisma.product.deleteMany();
 	console.log("Deleted records in product table");
+
 
 	seedRole();
 	console.log("Seeded records in role table");
@@ -72,11 +99,13 @@ async function main() {
 	seedUser();
 	console.log("Seeded records in user table");
 
+	seedCategory();
+	console.log("Seeded records in category table");
+
 	seedProduct();
 	console.log("Seeded records in product table");
 
 	console.log("Done!");
-
 }
 main()
 	.then(async () => {
@@ -85,5 +114,4 @@ main()
 	.catch(async (e) => {
 		console.error(e);
 		await prisma.$disconnect();
-		process.exit(1);
 	});

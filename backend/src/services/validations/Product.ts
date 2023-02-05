@@ -1,7 +1,9 @@
 import { BaseProductModel, ErrorDetails, ErrorResponse } from "../../models";
+import { getCategoriesService, getUsersService } from "../.";
 
 interface ProductInput extends BaseProductModel {
 	userId: number;
+	categoriesId: number[];
 }
 
 export const ProductInputValidation = async (product: ProductInput, errorName : string) => {
@@ -13,17 +15,6 @@ export const ProductInputValidation = async (product: ProductInput, errorName : 
 				errorName,
 				"Validation Error",
 				"All fields are required"
-			)
-		);
-	}
-	if (product.userId === undefined) {
-		throw new ErrorResponse(
-			400,
-			"Bad Request",
-			new ErrorDetails(
-				errorName,
-				"Validation Error",
-				"User Id is required"
 			)
 		);
 	}
@@ -54,5 +45,57 @@ export const ProductInputValidation = async (product: ProductInput, errorName : 
 			)
 		);
 	}
+	if (product.userId === undefined) {
+		throw new ErrorResponse(
+			400,
+			"Bad Request",
+			new ErrorDetails(
+				errorName,
+				"Validation Error",
+				"User Id is required"
+			)
+		);
+	}
+	const usersId = await (await getUsersService()).map((user) => user.id);
+
+	if (!usersId.includes(product.userId)) {
+		throw new ErrorResponse(
+			400,
+			"Bad Request",
+			new ErrorDetails(
+				errorName,
+				"Validation Error",
+				"User does not exist"
+			)
+		);
+	}
+
+	if (product.categoriesId === undefined || product.categoriesId.length < 1) {
+		throw new ErrorResponse(
+			400,
+			"Bad Request",
+			new ErrorDetails(
+				errorName,
+				"Validation Error",
+				"Category field is required"
+			)
+		);
+	}
+
+	const categoriesId = await (await getCategoriesService()).map((category) => category.id);
+	product.categoriesId.forEach((categoryId) => {
+		if (!categoriesId.includes(categoryId)) {
+			throw new ErrorResponse(
+				400,
+				"Bad Request",
+				new ErrorDetails(
+					errorName,
+					"Validation Error",
+					"Product category does not exist"
+				)
+			);
+		}
+	});
+
 	return product;
 };
