@@ -15,7 +15,7 @@ import { NextFunction, Request, Response } from "express";
 
 export const getProducts = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const products = await getProductsService();
+		const products = await getProductsService(req);
 		const response = new SuccessResponse<ProductModel[]>(
 			200,
 			"OK",

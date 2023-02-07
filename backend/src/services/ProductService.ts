@@ -5,67 +5,60 @@ import { ErrorDetails, ErrorResponse, UserAuthInfoRequest } from "../models";
 
 const prisma = new PrismaClient();
 
-export const getProductsService = async () => {
-	return await prisma.product.findMany({
-		select: {
-			id: true,
-			name: true,
-			price: true,
-			user: {
-				select: {
-					name: true,
-					email: true
-				}
-			},
-			categories: {
-				select: {
-					name: true
-				}
-			}
-		}
-	});
-};
+export const getProductsService = async (req?: Request) => {
 
-export const getProductsByIdWithCategoryService = async (
-	id: number,
-	categoriesId: number[],
-) => {
+	if (req && req.query.categoriesId) {
+		const categoriesId = req.query.categoriesId as string;
+		const categoriesIdArray = categoriesId.split(",").map(
+			(id) => numberValidation(id, "getProducts", "categoriesId")
+		);
 
-	categoriesId = categoriesId.map((id) => numberValidation(id, "getProductsByCategoryId", "Category id"));
-
-	return await prisma.product.findMany({
-		select: {
-			id: true,
-			name: true,
-			price: true,
-			user: {
-				select: {
-					id: true,
-					name: true,
-					email: true
-				}
-			},
-			categories: {
-				select: {
-					name: true
-				}
-			}
-		},
-		where: {
-			AND: [
-				{
-					categories: {
-						some: {
-							id: {
-								in: categoriesId
-							}
-						}
-					},
+		return await prisma.product.findMany({
+			select: {
+				id: true,
+				name: true,
+				price: true,
+				user: {
+					select: {
+						id: true,
+						name: true,
+						email: true
+					}
 				},
-				{
-					id: id
+				categories: {
+					select: {
+						name: true
+					}
 				}
-			]
+			},
+			where: {
+				categories: {
+					some: {
+						id: {
+							in: categoriesIdArray
+						}
+					}
+				},
+			},
+		});
+	}
+
+	return await prisma.product.findMany({
+		select: {
+			id: true,
+			name: true,
+			price: true,
+			user: {
+				select: {
+					name: true,
+					email: true
+				}
+			},
+			categories: {
+				select: {
+					name: true
+				}
+			}
 		}
 	});
 };
@@ -184,7 +177,7 @@ export const updateProductService = async (id: number, req: UserAuthInfoRequest)
 	});
 };
 
-export const deleteProductService = async (id: number, req : UserAuthInfoRequest) => {
+export const deleteProductService = async (id: number, req: UserAuthInfoRequest) => {
 	const product = await getProductByIdService(id);
 
 	if (product.user.id !== req.userId && req.roleId !== 1 && req.roleId !== 2) {
