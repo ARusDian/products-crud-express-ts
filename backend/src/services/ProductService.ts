@@ -5,40 +5,7 @@ import { ErrorDetails, ErrorResponse, UserAuthInfoRequest } from "../models";
 
 const prisma = new PrismaClient();
 
-export const getProductsService = async (roleId: number | undefined, userId: number | undefined) => {
-	if (!roleId || !userId) {
-		throw new ErrorResponse(
-			401,
-			"Unauthorized",
-			new ErrorDetails(
-				"getProducts",
-				"Unauthorized",
-				"User is not authorized to access this resource"
-			)
-		);
-	}
-
-	if (roleId === 1 || roleId === 2) {
-		return await prisma.product.findMany({
-			select: {
-				id: true,
-				name: true,
-				price: true,
-				user: {
-					select: {
-						name: true,
-						email: true
-					}
-				},
-				categories: {
-					select: {
-						name: true
-					}
-				}
-			}
-		});
-	}
-
+export const getProductsService = async () => {
 	return await prisma.product.findMany({
 		select: {
 			id: true,
@@ -55,69 +22,17 @@ export const getProductsService = async (roleId: number | undefined, userId: num
 					name: true
 				}
 			}
-		},
-		where: {
-			userId: userId
 		}
 	});
 };
 
 export const getProductsByIdWithCategoryService = async (
 	id: number,
-	roleId: number | undefined,
-	userId: number | undefined,
 	categoriesId: number[],
 ) => {
-	if (!roleId || !userId) {
-		throw new ErrorResponse(
-			401,
-			"Unauthorized",
-			new ErrorDetails(
-				"getProducts",
-				"Unauthorized",
-				"User is not authorized to access this resource"
-			)
-		);
-	}
 
 	categoriesId = categoriesId.map((id) => numberValidation(id, "getProductsByCategoryId", "Category id"));
 
-	if (roleId === 1 || roleId === 2) {
-		return await prisma.product.findMany({
-			select: {
-				id: true,
-				name: true,
-				price: true,
-				user: {
-					select: {
-						name: true,
-						email: true
-					}
-				},
-				categories: {
-					select: {
-						name: true
-					}
-				}
-			},
-			where: {
-				AND: [
-					{
-						categories: {
-							some: {
-								id: {
-									in: categoriesId
-								}
-							}
-						},
-					},
-					{
-						id: id
-					}
-				]
-			}
-		});
-	}
 	return await prisma.product.findMany({
 		select: {
 			id: true,
@@ -125,6 +40,7 @@ export const getProductsByIdWithCategoryService = async (
 			price: true,
 			user: {
 				select: {
+					id: true,
 					name: true,
 					email: true
 				}
@@ -138,16 +54,13 @@ export const getProductsByIdWithCategoryService = async (
 		where: {
 			AND: [
 				{
-					userId: userId
-				},
-				{
 					categories: {
 						some: {
 							id: {
 								in: categoriesId
 							}
 						}
-					}
+					},
 				},
 				{
 					id: id
@@ -157,19 +70,7 @@ export const getProductsByIdWithCategoryService = async (
 	});
 };
 
-export const getProductByIdService = async (id: number, roleId: number | undefined, userId: number | undefined) => {
-	if (!roleId || !userId) {
-		throw new ErrorResponse(
-			401,
-			"Unauthorized",
-			new ErrorDetails(
-				"getProducts",
-				"Unauthorized",
-				"User is not authorized to access this resource"
-			)
-		);
-	}
-
+export const getProductByIdService = async (id: number) => {
 	id = numberValidation(id, "deleteRole", "Product id");
 
 	const product = await prisma.product.findFirst({
@@ -179,6 +80,7 @@ export const getProductByIdService = async (id: number, roleId: number | undefin
 			price: true,
 			user: {
 				select: {
+					id: true,
 					name: true,
 					email: true
 				}
@@ -189,15 +91,9 @@ export const getProductByIdService = async (id: number, roleId: number | undefin
 				}
 			}
 		},
-		where: {
-			AND: [
-				{
-					id: id
-				},
-				{
-					userId: userId
-				}
-			]
+		where:
+		{
+			id: id
 		}
 	});
 
@@ -244,7 +140,19 @@ export const createProductService = async (req: Request) => {
 };
 
 export const updateProductService = async (id: number, req: UserAuthInfoRequest) => {
-	const product = await getProductByIdService(id, req.roleId, req.userId);
+	const product = await getProductByIdService(id);
+
+	if (product.user.id !== req.userId && req.roleId !== 1 && req.roleId !== 2) {
+		throw new ErrorResponse(
+			403,
+			"Forbidden",
+			new ErrorDetails(
+				"updateProduct",
+				"Access Denied",
+				"You are not allowed to update this product"
+			)
+		);
+	}
 
 	const {
 		name,
@@ -276,8 +184,20 @@ export const updateProductService = async (id: number, req: UserAuthInfoRequest)
 	});
 };
 
-export const deleteProductService = async (id: number, roleId: number | undefined, userId: number | undefined) => {
-	const product = await getProductByIdService(id, roleId, userId);
+export const deleteProductService = async (id: number, req : UserAuthInfoRequest) => {
+	const product = await getProductByIdService(id);
+
+	if (product.user.id !== req.userId && req.roleId !== 1 && req.roleId !== 2) {
+		throw new ErrorResponse(
+			403,
+			"Forbidden",
+			new ErrorDetails(
+				"updateProduct",
+				"Access Denied",
+				"You are not allowed to update this product"
+			)
+		);
+	}
 
 	return await prisma.product.delete({
 		where: {
