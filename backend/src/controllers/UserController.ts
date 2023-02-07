@@ -4,7 +4,8 @@ import {
 	getUserByIdService,
 	deleteUserService,
 	createUserService,
-	updateUserService
+	updateUserService,
+	getUserByIdWithOrderService
 } from "../services";
 import { Request, Response, NextFunction } from "express";
 
@@ -17,6 +18,25 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction) 
 			new DataDetailResponse<UserModel[]>(
 				"users",
 				users
+			)
+		);
+		res.status(response.code).json(response);
+		return;
+	}
+	catch (error) {
+		next(error);
+	}
+};
+
+export const getUserByIdWithOrder = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const user = await getUserByIdWithOrderService(req.params.id);
+		const response = new SuccessResponse<UserModel>(
+			200,
+			"OK",
+			new DataDetailResponse<UserModel>(
+				"users",
+				user
 			)
 		);
 		res.status(response.code).json(response);

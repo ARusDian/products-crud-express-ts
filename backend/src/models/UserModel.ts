@@ -1,4 +1,4 @@
-import { BaseRoleModel } from ".";
+import { BaseRoleModel, OrderModel, ProductModel } from ".";
 
 export interface BaseUserModel {
     id?: number;
@@ -7,6 +7,9 @@ export interface BaseUserModel {
     password?: string;
     role?: BaseRoleModel;
     roleId?: number;
+    orders?: OrderModel[];
+    products? : ProductModel[];
+
 }
 
 export interface UserModel extends BaseUserModel {
