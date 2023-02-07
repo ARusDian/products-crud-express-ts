@@ -30,7 +30,7 @@ export const getProductsService = async (roleId: number | undefined, userId: num
 						email: true
 					}
 				},
-				category: {
+				categories: {
 					select: {
 						name: true
 					}
@@ -50,7 +50,7 @@ export const getProductsService = async (roleId: number | undefined, userId: num
 					email: true
 				}
 			},
-			category: {
+			categories: {
 				select: {
 					name: true
 				}
@@ -94,7 +94,7 @@ export const getProductsByIdWithCategoryService = async (
 						email: true
 					}
 				},
-				category: {
+				categories: {
 					select: {
 						name: true
 					}
@@ -103,7 +103,7 @@ export const getProductsByIdWithCategoryService = async (
 			where: {
 				AND: [
 					{
-						category: {
+						categories: {
 							some: {
 								id: {
 									in: categoriesId
@@ -129,7 +129,7 @@ export const getProductsByIdWithCategoryService = async (
 					email: true
 				}
 			},
-			category: {
+			categories: {
 				select: {
 					name: true
 				}
@@ -141,7 +141,7 @@ export const getProductsByIdWithCategoryService = async (
 					userId: userId
 				},
 				{
-					category: {
+					categories: {
 						some: {
 							id: {
 								in: categoriesId
@@ -183,7 +183,7 @@ export const getProductByIdService = async (id: number, roleId: number | undefin
 					email: true
 				}
 			},
-			category: {
+			categories: {
 				select: {
 					name: true
 				}
@@ -232,7 +232,7 @@ export const createProductService = async (req: Request) => {
 					id: userId
 				}
 			},
-			category: {
+			categories: {
 				connect: categoriesId.map((id) => {
 					return {
 						id: id
@@ -265,7 +265,7 @@ export const updateProductService = async (id: number, req: UserAuthInfoRequest)
 					id: userId
 				}
 			},
-			category: {
+			categories: {
 				connect: categoriesId.map((id) => {
 					return {
 						id: id
