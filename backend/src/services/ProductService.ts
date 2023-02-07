@@ -192,9 +192,9 @@ export const deleteProductService = async (id: number, req : UserAuthInfoRequest
 			403,
 			"Forbidden",
 			new ErrorDetails(
-				"updateProduct",
+				"deleteProduct",
 				"Access Denied",
-				"You are not allowed to update this product"
+				"You are not allowed to delete this product"
 			)
 		);
 	}
